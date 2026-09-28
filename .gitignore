@@ -1,0 +1,35 @@
+# Two independent repositories share this workspace.
+/backend/
+/reference-apk/
+/.github/
+
+# Local Android and Gradle state.
+/.gradle/
+/.idea/
+/.kotlin/
+/local.properties
+**/build/
+*.iml
+*.log
+
+# Captures are local research artifacts, not app source.
+/docs/clone-capture/
+/docs/*.png
+/docs/*.jpg
+/docs/*.jpeg
+/docs/*.webp
+/docs/*.xml
+
+# Credentials / signing material / local data.
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+google-services.json
+*.sqlite
+*.db
