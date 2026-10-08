@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AloboClone"
-include(":app")
+rootProject.name = "Anta"
+include(":anta")
