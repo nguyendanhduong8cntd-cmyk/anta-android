@@ -26,22 +26,28 @@ Not built: chat and push notifications, which the backend has endpoints for.
 
 ## Build and run (debug)
 
-The debug build expects the backend on the development machine.
+The debug build talks to the shared demo backend on Render, `https://anta-backend.onrender.com/api/v1`, so a fresh clone runs as it is: open it in Android Studio and press Run, on a phone or an emulator with internet access. The free instance sleeps after 15 idle minutes and takes about a minute to answer the first request after that; opening `https://anta-backend.onrender.com/api/v1/health/ready` in a browser wakes it.
+
+```powershell
+.\gradlew.bat :anta:installDebug
+adb shell am start -n vn.anta.booking/.MainActivity
+```
+
+Without `anta.devKey` (below), sign up with an email address: the code arrives by mail. Signing up with a phone number and paying a booking in the sandbox both need the key, which is not in Git; ask the project owner for it.
+
+To use the backend on this machine instead, set `anta.debugApiUrl=http://127.0.0.1:3000/api/v1`, start it and forward the port:
 
 ```powershell
 # backend/: docker compose -f infra/compose.yaml --profile app up -d
-.\gradlew.bat :anta:assembleDebug
-adb install -r .\anta\build\outputs\apk\debug\anta-debug.apk
 adb reverse tcp:3000 tcp:3000          # again after every reconnect of the phone
-adb shell am start -n vn.anta.booking/.MainActivity
 ```
 
 `local.properties` (ignored by git) may hold:
 
 | Key | Meaning |
 |---|---|
-| `anta.debugApiUrl` | Backend address of the debug build. Default `http://127.0.0.1:3000/api/v1`; an emulator can also use `http://10.0.2.2:3000/api/v1`. |
-| `anta.devKey` | The backend's `DEV_ADMIN_KEY`. With it, and `DEV_OTP_ENABLED=true` on the backend, the debug build shows "Lấy mã từ máy chủ thử nghiệm" on the code step and "Thanh toán thử nghiệm" on a booking, because a local backend can neither send a code nor take a payment. |
+| `anta.debugApiUrl` | Backend address of the debug build. Default `https://anta-backend.onrender.com/api/v1`; the backend on this machine is `http://127.0.0.1:3000/api/v1` (with `adb reverse`), or `http://10.0.2.2:3000/api/v1` from an emulator. |
+| `anta.devKey` | The backend's `DEV_ADMIN_KEY`; the Render demo uses the same one as the owner's local backend. With it, and `DEV_OTP_ENABLED=true` on the backend, the debug build shows "Lấy mã từ máy chủ thử nghiệm" on the code step and "Thanh toán thử nghiệm" on a booking, because a code for a phone number cannot be sent (no SMS provider) and a sandbox payment is settled by hand. |
 | `anta.firebaseAppId`, `anta.firebaseApiKey`, `anta.firebaseProjectId`, `anta.firebaseSenderId` | The debug build's Firebase app. With them, `anta.devKey` and `OTP_DEV_PUSH=true` on the backend, a requested code also arrives as a notification on the phone (Android 13 and later ask for notification permission when the app opens). Release builds have no Firebase at all. |
 
 Plain HTTP is allowed only in debug builds and only to `127.0.0.1`, `localhost` and `10.0.2.2`.
@@ -52,7 +58,7 @@ The app shows "Tiếp tục với Google" only when the backend names a Google c
 
 1. In a Google Cloud project, configure the OAuth consent screen, then under *APIs & Services > Credentials* create two OAuth client IDs:
    - type **Web application** — its client ID is what the backend checks sign-ins against;
-   - type **Android** — package name `vn.anta.booking` and the SHA-1 of the key the APK is signed with. `.\gradlew.bat :anta:signingReport` prints the debug key's SHA-1; a release key needs its own Android client.
+   - type **Android** — package name `vn.anta.booking` and the SHA-1 of the key the APK is signed with. `.\gradlew.bat :anta:signingReport` prints the debug key's SHA-1; a release key needs its own Android client. Every developer's machine has its own debug key, so Google sign-in from a teammate's build works only once their SHA-1 is added as well.
 2. Put the Web client ID in the backend's `.env` as `GOOGLE_CLIENT_ID=` and restart the API.
 
 The phone asks Google for an ID token addressed to that client and sends it to the backend, which verifies it with Google's public keys. An account created this way has no password; deleting it asks for a new Google sign-in instead.

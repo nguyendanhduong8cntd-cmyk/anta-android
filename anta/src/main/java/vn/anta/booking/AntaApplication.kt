@@ -22,10 +22,11 @@ import vn.anta.booking.data.SessionStore
 
 /** The app's long-lived objects, built once and handed to the screens' view models. */
 class AppContainer(context: Context) {
+    // The demo backend sleeps when idle and takes about a minute to answer its first request after that.
     private val http = OkHttpClient.Builder()
-        .connectTimeout(6, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .callTimeout(25, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(70, TimeUnit.SECONDS)
+        .callTimeout(80, TimeUnit.SECONDS)
         .build()
 
     /** For work that belongs to the app rather than to a screen, such as following who is signed in. */

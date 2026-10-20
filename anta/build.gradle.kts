@@ -39,8 +39,9 @@ android {
 
     buildTypes {
         debug {
-            // The backend runs on the development machine; `adb reverse tcp:3000 tcp:3000` makes it this address on the device.
-            buildConfigField("String", "API_BASE_URL", quoted(setting("anta.debugApiUrl") ?: "http://127.0.0.1:3000/api/v1"))
+            // The shared demo backend on Render, so a fresh clone runs as it is. For the backend on this machine instead:
+            // anta.debugApiUrl=http://127.0.0.1:3000/api/v1 in local.properties, then `adb reverse tcp:3000 tcp:3000`.
+            buildConfigField("String", "API_BASE_URL", quoted(setting("anta.debugApiUrl") ?: "https://anta-backend.onrender.com/api/v1"))
             // Lets a debug build read its own verification code and settle a sandbox payment on a local backend.
             // Only src/debug uses it; a release build has neither the key nor the code that would send it.
             buildConfigField("String", "DEV_KEY", quoted(setting("anta.devKey") ?: ""))
