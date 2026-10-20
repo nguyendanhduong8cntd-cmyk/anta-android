@@ -78,7 +78,7 @@ object ApiJson {
 
     fun otpChallenge(body: String): OtpChallenge {
         val data = dataObject(body)
-        return OtpChallenge(data.required("challengeId"), instant(data, "expiresAt"))
+        return OtpChallenge(data.required("challengeId"), instant(data, "expiresAt"), data.optString("delivery") == "development-only")
     }
 
     fun verificationToken(body: String): String = dataObject(body).required("verificationToken")

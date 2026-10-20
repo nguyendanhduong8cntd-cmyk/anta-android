@@ -1,6 +1,5 @@
 # Two independent repositories share this workspace.
 /backend/
-/.github/
 
 # Local Android and Gradle state.
 /.gradle/

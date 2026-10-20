@@ -116,7 +116,8 @@ class Repository(
     }
 
     suspend fun sendCode(identifier: String, purpose: OtpPurpose): OtpChallenge = parse {
-        ApiJson.otpChallenge(api.post("/public/auth/otp/send", JSONObject().put("identifier", identifier).put("purpose", purpose.query)))
+        val body = JSONObject().put("identifier", identifier).put("purpose", purpose.query)
+        ApiJson.otpChallenge(development?.sendCode(body) ?: api.post("/public/auth/otp/send", body))
     }
 
     /** The proof that the code was right; it is spent by [register] or [resetPassword]. */

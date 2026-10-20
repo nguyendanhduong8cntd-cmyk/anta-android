@@ -44,6 +44,11 @@ android {
             // Lets a debug build read its own verification code and settle a sandbox payment on a local backend.
             // Only src/debug uses it; a release build has neither the key nor the code that would send it.
             buildConfigField("String", "DEV_KEY", quoted(setting("anta.devKey") ?: ""))
+            // The Firebase app that receives the codes a local backend pushes (OTP_DEV_PUSH). Empty settings: no push.
+            for ((field, key) in listOf(
+                "FIREBASE_APP_ID" to "anta.firebaseAppId", "FIREBASE_API_KEY" to "anta.firebaseApiKey",
+                "FIREBASE_PROJECT_ID" to "anta.firebaseProjectId", "FIREBASE_SENDER_ID" to "anta.firebaseSenderId"
+            )) buildConfigField("String", field, quoted(setting(key) ?: ""))
         }
         release {
             isMinifyEnabled = true
@@ -100,6 +105,9 @@ dependencies {
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // Debug builds only: receives the verification codes a local backend pushes (src/debug).
+    debugImplementation(platform("com.google.firebase:firebase-bom:35.0.0"))
+    debugImplementation("com.google.firebase:firebase-messaging")
 
     testImplementation("junit:junit:4.13.2")
     // org.json ships with Android but not with the JVM that runs unit tests.

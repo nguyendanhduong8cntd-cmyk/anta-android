@@ -52,6 +52,7 @@ class AntaApplication : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+        installDevelopmentTools(this)
         // Reading the stored session asks the Keystore, which can be slow. Started here on another thread, it is
         // normally done by the time the first screen asks for the container; if not, that screen waits for the rest.
         Thread({ container }, "anta-start").start()

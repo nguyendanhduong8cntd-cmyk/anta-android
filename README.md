@@ -2,7 +2,7 @@
 
 Android app for finding sports venues and booking court time. Module `anta/`: Kotlin, Jetpack Compose, Material 3, one activity.
 
-It talks to the backend kept in a [separate repository](https://github.com/nguyendanhduong8cntd-cmyk/alobo-backend) (checked out at `backend/`, ignored by this repository's git).
+It talks to the backend kept in a [separate repository](https://github.com/nguyendanhduong8cntd-cmyk/anta-backend) (checked out at `backend/`, ignored by this repository's git).
 
 ## What works
 
@@ -42,6 +42,7 @@ adb shell am start -n vn.anta.booking/.MainActivity
 |---|---|
 | `anta.debugApiUrl` | Backend address of the debug build. Default `http://127.0.0.1:3000/api/v1`; an emulator can also use `http://10.0.2.2:3000/api/v1`. |
 | `anta.devKey` | The backend's `DEV_ADMIN_KEY`. With it, and `DEV_OTP_ENABLED=true` on the backend, the debug build shows "Lấy mã từ máy chủ thử nghiệm" on the code step and "Thanh toán thử nghiệm" on a booking, because a local backend can neither send a code nor take a payment. |
+| `anta.firebaseAppId`, `anta.firebaseApiKey`, `anta.firebaseProjectId`, `anta.firebaseSenderId` | The debug build's Firebase app. With them, `anta.devKey` and `OTP_DEV_PUSH=true` on the backend, a requested code also arrives as a notification on the phone (Android 13 and later ask for notification permission when the app opens). Release builds have no Firebase at all. |
 
 Plain HTTP is allowed only in debug builds and only to `127.0.0.1`, `localhost` and `10.0.2.2`.
 

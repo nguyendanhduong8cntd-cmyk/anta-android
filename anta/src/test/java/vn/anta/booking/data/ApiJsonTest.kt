@@ -170,8 +170,10 @@ class ApiJsonTest {
         assertEquals(User("u1", "an@example.com", "An"), ApiJson.user("""{"data":{"id":"u1","identifier":"an@example.com","displayName":"An","version":1}}"""))
         // An account made by Google sign-in has no password to confirm things with.
         assertFalse(ApiJson.user("""{"data":{"id":"u2","identifier":"b@gmail.com","displayName":"b","passwordLogin":false}}""").passwordLogin)
-        assertEquals(OtpChallenge("c1", Instant.parse("2026-10-08T03:05:00Z")),
+        assertEquals(OtpChallenge("c1", Instant.parse("2026-10-08T03:05:00Z"), developmentOnly = true),
             ApiJson.otpChallenge("""{"data":{"challengeId":"c1","expiresAt":"2026-10-08T03:05:00.000Z","delivery":"development-only"}}"""))
+        // A code that went out by email is read in the mailbox: the development backend keeps no copy to hand out.
+        assertFalse(ApiJson.otpChallenge("""{"data":{"challengeId":"c2","expiresAt":"2026-10-08T03:05:00.000Z","delivery":"email"}}""").developmentOnly)
         assertEquals("v-token", ApiJson.verificationToken("""{"data":{"verificationToken":"v-token","expiresIn":300}}"""))
         assertEquals("123456", ApiJson.developmentCode("""{"data":{"code":"123456"}}"""))
     }

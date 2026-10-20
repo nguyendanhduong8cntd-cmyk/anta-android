@@ -87,7 +87,8 @@ data class Tokens(val accessToken: String, val refreshToken: String, val accessE
 
 data class Session(val user: User, val tokens: Tokens)
 
-data class OtpChallenge(val id: String, val expiresAt: Instant)
+/** [developmentOnly]: no real channel carried the code, so only a development backend's own aids hold it. */
+data class OtpChallenge(val id: String, val expiresAt: Instant, val developmentOnly: Boolean)
 
 /** [googleClientId] is the backend's Google sign-in client; null when the backend does not offer Google sign-in. */
 data class AppConfig(val sandboxPayment: Boolean, val feedbackEmail: String?, val googleClientId: String?)
