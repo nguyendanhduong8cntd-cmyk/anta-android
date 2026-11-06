@@ -134,6 +134,19 @@ class ApiJsonTest {
     }
 
     @Test
+    fun `a booking awaiting owner confirmation is read and reflects its confirmation deadline`() {
+        val booking = ApiJson.booking("""{"data":{"id":"b2","branch_id":"a1","yard_id":"y1","starts_at":"2026-10-09T02:00:00.000Z",
+            "ends_at":"2026-10-09T04:00:00.000Z","amount":360000,"status":"PENDING_OWNER_CONFIRMATION",
+            "confirm_deadline_at":"2026-10-09T02:00:00.000Z",
+            "branch_name":"Hyperhall","branch_address":"47 Đường Số 29","branch_timezone":"Asia/Ho_Chi_Minh","yard_name":"Sân 1"}}""")
+
+        assertEquals(BookingStatus.PENDING_OWNER_CONFIRMATION, booking.status)
+        assertEquals(Instant.parse("2026-10-09T02:00:00Z"), booking.confirmDeadlineAt)
+        assertEquals(BookingStatus.PENDING_OWNER_CONFIRMATION, booking.statusAt(Instant.parse("2026-10-09T01:59:59Z")))
+        assertEquals(BookingStatus.EXPIRED, booking.statusAt(Instant.parse("2026-10-09T02:00:00Z")))
+    }
+
+    @Test
     fun `a booking list skips an unreadable booking and an unknown status stays unknown`() {
         val bookings = ApiJson.bookings("""{"data":{"items":[
             {"id":"b1","branch_id":"a1","starts_at":"2026-10-09T02:00:00.000Z","ends_at":"2026-10-09T03:00:00.000Z","amount":"180000","status":"REFUNDED"},

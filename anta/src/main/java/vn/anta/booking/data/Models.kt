@@ -57,7 +57,7 @@ data class Slot(val yardId: String, val yardName: String, val startsAt: Instant,
 
 data class Hold(val id: String, val expiresAt: Instant, val total: Long)
 
-enum class BookingStatus { PENDING_PAYMENT, CONFIRMED, CANCELLED, EXPIRED, UNKNOWN }
+enum class BookingStatus { PENDING_PAYMENT, PENDING_OWNER_CONFIRMATION, CONFIRMED, CANCELLED, EXPIRED, UNKNOWN }
 
 data class Booking(
     val id: String,
@@ -71,11 +71,15 @@ data class Booking(
     val endsAt: Instant,
     val amount: Long,
     val status: BookingStatus,
-    val paymentExpiresAt: Instant?
+    val paymentExpiresAt: Instant?,
+    val confirmDeadlineAt: Instant? = null
 ) {
-    /** What the booking is to the user right now: an unpaid booking past its deadline is already lost. */
-    fun statusAt(now: Instant): BookingStatus =
-        if (status == BookingStatus.PENDING_PAYMENT && paymentExpiresAt != null && !paymentExpiresAt.isAfter(now)) BookingStatus.EXPIRED else status
+    /** What the booking is to the user right now: an unpaid booking or unconfirmed booking past its deadline is already lost. */
+    fun statusAt(now: Instant): BookingStatus = when {
+        status == BookingStatus.PENDING_PAYMENT && paymentExpiresAt != null && !paymentExpiresAt.isAfter(now) -> BookingStatus.EXPIRED
+        status == BookingStatus.PENDING_OWNER_CONFIRMATION && confirmDeadlineAt != null && !confirmDeadlineAt.isAfter(now) -> BookingStatus.EXPIRED
+        else -> status
+    }
 }
 
 data class PaymentIntent(val id: String, val status: String, val amount: Long, val checkoutUrl: String?, val sandbox: Boolean)

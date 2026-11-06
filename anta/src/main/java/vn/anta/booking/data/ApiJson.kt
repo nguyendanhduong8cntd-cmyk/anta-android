@@ -142,7 +142,8 @@ object ApiJson {
         endsAt = instant(item, "ends_at"),
         amount = item.getLong("amount"),
         status = BookingStatus.entries.firstOrNull { it.name == item.text("status") } ?: BookingStatus.UNKNOWN,
-        paymentExpiresAt = item.text("payment_expires_at")?.let(Instant::parse)
+        paymentExpiresAt = item.text("payment_expires_at")?.let(Instant::parse),
+        confirmDeadlineAt = item.text("confirm_deadline_at")?.let(Instant::parse)
     )
 
     private fun dataObject(body: String): JSONObject = JSONObject(body).getJSONObject("data")

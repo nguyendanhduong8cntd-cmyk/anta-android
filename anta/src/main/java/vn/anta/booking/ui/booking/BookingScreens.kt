@@ -269,7 +269,7 @@ private fun BookingContent(booking: Booking, now: Instant, model: BookingViewMod
                 Text("Máy chủ đang chạy chế độ thử nghiệm: không có khoản tiền thật nào bị trừ.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
         }
-        val cancellable = status == BookingStatus.PENDING_PAYMENT || (status == BookingStatus.CONFIRMED && booking.startsAt.isAfter(now))
+        val cancellable = status == BookingStatus.PENDING_PAYMENT || status == BookingStatus.PENDING_OWNER_CONFIRMATION || (status == BookingStatus.CONFIRMED && booking.startsAt.isAfter(now))
         if (cancellable) {
             OutlinedButton(onClick = { confirmCancel = true }, enabled = !model.working, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text("Huỷ lịch đặt") }
         }
@@ -280,7 +280,7 @@ private fun BookingContent(booking: Booking, now: Instant, model: BookingViewMod
         AlertDialog(
             onDismissRequest = { confirmCancel = false },
             title = { Text("Huỷ lịch đặt này?") },
-            text = { Text(if (status == BookingStatus.CONFIRMED) "Khoản đã thanh toán được hoàn theo chính sách huỷ. Sát giờ chơi có thể không huỷ được." else "Khung giờ sẽ được trả lại cho người khác đặt.") },
+            text = { Text(if (status == BookingStatus.CONFIRMED || status == BookingStatus.PENDING_OWNER_CONFIRMATION) "Khoản đã thanh toán được hoàn theo chính sách huỷ. Sát giờ chơi có thể không huỷ được." else "Khung giờ sẽ được trả lại cho người khác đặt.") },
             confirmButton = { TextButton(onClick = { confirmCancel = false; model.cancel() }) { Text("Huỷ lịch", color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { confirmCancel = false }) { Text("Giữ lại") } }
         )
@@ -292,6 +292,7 @@ private fun StatusBanner(status: BookingStatus, booking: Booking, now: Instant) 
     val colors = MaterialTheme.colorScheme
     val (emoji, title, detail) = when (status) {
         BookingStatus.PENDING_PAYMENT -> Triple("⏳", "Chờ thanh toán", booking.paymentExpiresAt?.let { "Giữ chỗ còn ${Formats.countdown(Duration.between(now, it))}" } ?: "Thanh toán để giữ khung giờ này.")
+        BookingStatus.PENDING_OWNER_CONFIRMATION -> Triple("⏳", "Chờ chủ sân xác nhận", booking.confirmDeadlineAt?.let { "Chủ sân sẽ phản hồi trong ${Formats.countdown(Duration.between(now, it))}. Đã thanh toán 100%." } ?: "Đã thanh toán thành công. Đang chờ chủ sân xác nhận.")
         BookingStatus.CONFIRMED -> Triple("✅", "Đặt lịch thành công", if (booking.endsAt.isAfter(now)) "Hẹn gặp bạn ở sân!" else "Lịch này đã diễn ra.")
         BookingStatus.CANCELLED -> Triple("🚫", "Đã huỷ", "Lịch đặt này đã được huỷ.")
         BookingStatus.EXPIRED -> Triple("⌛", "Hết hạn thanh toán", "Khung giờ đã được trả lại. Bạn có thể đặt lại.")
@@ -299,7 +300,7 @@ private fun StatusBanner(status: BookingStatus, booking: Booking, now: Instant) 
     }
     val background = when (status) {
         BookingStatus.CONFIRMED -> colors.secondaryContainer
-        BookingStatus.PENDING_PAYMENT -> colors.tertiaryContainer
+        BookingStatus.PENDING_PAYMENT, BookingStatus.PENDING_OWNER_CONFIRMATION -> colors.tertiaryContainer
         else -> colors.surfaceContainerHigh
     }
     Row(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(background).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -389,7 +390,7 @@ fun BookingsScreen(contentPadding: PaddingValues, onLogin: () -> Unit, onBooking
 private fun BookingList(bookings: List<Booking>, onBooking: (String) -> Unit, onExplore: () -> Unit) {
     val now = remember(bookings) { Instant.now() }
     val (upcoming, past) = remember(bookings) {
-        bookings.partition { it.endsAt.isAfter(now) && it.statusAt(now).let { status -> status == BookingStatus.PENDING_PAYMENT || status == BookingStatus.CONFIRMED } }
+        bookings.partition { it.endsAt.isAfter(now) && it.statusAt(now).let { status -> status == BookingStatus.PENDING_PAYMENT || status == BookingStatus.PENDING_OWNER_CONFIRMATION || status == BookingStatus.CONFIRMED } }
     }
     LazyColumn(contentPadding = PaddingValues(bottom = 20.dp), modifier = Modifier.fillMaxSize()) {
         if (bookings.isEmpty()) item(key = "empty") { StateMessage("🏸", "Chưa có lịch đặt nào", "Tìm một sân ưng ý và đặt giờ chơi đầu tiên của bạn.", action = "Tìm sân", onAction = onExplore) }
@@ -432,6 +433,7 @@ private fun StatusPill(status: BookingStatus) {
     when (status) {
         BookingStatus.CONFIRMED -> Pill("Đã xác nhận", colors.secondaryContainer, colors.onSecondaryContainer)
         BookingStatus.PENDING_PAYMENT -> Pill("Chờ thanh toán", colors.tertiaryContainer, colors.onTertiaryContainer)
+        BookingStatus.PENDING_OWNER_CONFIRMATION -> Pill("Chờ duyệt", colors.tertiaryContainer, colors.onTertiaryContainer)
         BookingStatus.CANCELLED -> Pill("Đã huỷ", colors.surfaceContainerHighest, colors.onSurfaceVariant)
         BookingStatus.EXPIRED -> Pill("Hết hạn", colors.surfaceContainerHighest, colors.onSurfaceVariant)
         BookingStatus.UNKNOWN -> Pill("Đang cập nhật", colors.surfaceContainerHighest, colors.onSurfaceVariant)
